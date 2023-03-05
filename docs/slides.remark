@@ -1,0 +1,444 @@
+name: head
+layout: true
+class: middle inverse
+<style>
+.huge { font-size: 2rem; }
+.huge .remark-code { font-size: 2.5rem; }
+</style>
+<style>
+.hljs-monokai .hljs { background: transparent; }
+code { background: transparent; }
+</style>
+<style>
+.full { position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 0; }
+.abs-right { position: absolute; top: 0; bottom: 0; right: 0; z-index: 0; }
+.abs-left { position: absolute; top: 0; bottom: 0; left: 0; z-index: 0; }
+.bottom-left { position: absolute; left: 1rem; bottom: 1rem; z-index: 1; }
+.bottom-right { position: absolute; right: 1rem; bottom: 1rem; z-index: 1; }
+.bottom-left,
+.bottom-right { font-size: 0.8rem; }
+.half { width: 50%; }
+</style>
+<style>
+blockquote {
+  margin-top: 2rem;
+  margin-left: 0;
+  border-left: 3px solid #f06;
+  padding-left: 1rem;
+  font-style: italic;
+  text-align: left;
+}
+</style>
+---
+name: huge
+layout: true
+class: middle inverse huge
+---
+name: normal
+layout: true
+class: top
+---
+template: head
+
+# 🔓
+# Nøkkelløs autentisering 
+## fra GitHub Actions
+<br>
+.left[
+## <a href="https://torgeir.dev">@torgeir</a>
+]
+
+???
+
+- Sitter der
+- Titter på noen GitHub Actions som kjører tester
+- Kanskje har du hørt om infrastruktur som kode, terraform
+- Og tenker kunne vi ikke bare kjørt terraform i det vi merger
+- Provisjonert infrastruktur GCP i det vi merger
+- Jo, det kan du!
+
+---
+class: middle inverse
+
+# 🏫 Godt skolert 
+<br>
+## - Bruker ikke eget passord
+## - Tjenestebruker (Service account)
+## - For det éne formålet
+## - Least privilege
+## - Lager og laster ned en nøkkel
+
+```shell
+cat key.json | base64 -e | pbcopy
+```
+
+???
+
+- Tar ikke ditt eget passord eller personlige nøkler, det blir herk når du skal ut av teamet
+- Men du lager en tjenestebruker (service account)
+- Med det minimale settet med rettigheter som du trenger
+- Laster ned et nøkkelpar på pcn
+- Limer det inn i GitHub Secrets
+- Så henter du kanskje en kaffe og kommer tilbake og setter deg foran skjermen
+
+---
+
+# 📰☕ Leser nyheter
+
+
+<style>
+.leak {box-shadow: 0px 20px 50px;}
+.leak--1 {position: absolute; transform: rotate(8deg) translate(-80px, 100px);}
+.leak--2 {position: absolute; transform: rotate(-10deg) translate(30px, 20px);}
+.leak--3 {position: absolute; transform: rotate(15deg) translate(70px, -150px) scale(0.8);}
+</style>
+
+.bottom-right[
+[hothardware.com](https://hothardware.com/news/toyota-leaked-access-key-github-exposing-300k-customer-email-addresses)<br>
+[investing.com](https://www.investing.com/news/cryptocurrency-news/report-gala-token-exploit-resulted-from-public-leak-of-private-key-on-github-2935230https://webcache.googleusercontent.com/search?q=cache:Kzshw7dsyK0J:https://www.investing.com/news/cryptocurrency-news/report-gala-token-exploit-resulted-from-public-leak-of-private-key-on-github-2935230&cd=1&hl=no&ct=clnk&gl=no)<br> [gitguardian.com](https://blog.gitguardian.com/samsung-and-nvidia-are-the-latest-companies-to-involuntarily-go-open-source-potentially-leaking-company-secrets/)
+]
+
+???
+
+- Og leser litt nyheter
+--
+<img class="leak leak--1" src="leak-1.png">
+???
+- Om toyota
+--
+<img class="leak leak--2" src="leak-2.png">
+???
+- En eller anne crypto coin
+--
+<img class="leak leak--3" src="leak-3.png">
+???
+- Samsung source code led to the discovery of more than 6,600 secret keys, including private keys, usernames and passwords, AWS keys, Google keys, and GitHub keys.
+
+- Samsung direkte relatert, for disse fikk kildekoden stjålet
+- **men det er service account nøkler**
+- Og disse har ikke putta nøklene i Github Secrets, sånn som vi egentlig skal snakke om
+- Men det skal så lite til
+---
+template: huge
+
+# "Dævven, det virke!"
+
+```shell
+git add .
+git commit -m "ohyeah"
+git push
+```
+
+???
+
+- Kanskje var det ikke kaffe du drakk, og du runda akkurat ballmers peak
+- Eller en espresso, hva vet jeg
+
+---
+template: huge
+class: center middle
+# `key.json`
+???
+- helvete
+---
+template: huge
+
+```sh
+# TODO delete me
+export SECRET_KEY='
+  -----BEGIN PRIVATE KEY-----
+  (...)
+'
+```
+
+???
+
+- Eller kanskje du finner ala det her.
+- Hvem har ikke gjort noe sånt.
+- Det er så alt for lett å rote det til
+- Vi må slutte med det! Nøkler skal ikke i kode.
+
+---
+template: head
+
+# Nøkler er noe herk!
+## ..det enkleste er å la være.
+
+???
+
+Burde vært punchlinen til Workload Identity Federation.
+
+Som er det vi skal se på nå
+
+- Jobbe med nøkler på en god måte er utfordrende, om du er fersk, og om du har vært i gamet lenge
+- Å vedlikeholde langlevende nøkler sånn som for Service Accounts er utfordrende
+  - **Må lastes ned, utstedes/utveksles**:
+    Epost, Signal, Keybase. Kryptere med publickeyen i et GPG nøkkelpar, så kan bare den med privatekeyen lese den<br>
+  - **Beskyttes**: Hvor mange i temaet har de liggende på disk? Håpløst å følge med på.
+  - **Invalideres** Har du en plan og oversikt over hvordan det må foregå?
+  - **Roteres**
+  
+- Det er vanskelig.
+---
+template: head
+class: center
+
+# OpenID Connect (OIDC)
+## +
+# Workload Identity Federation (WIF)
+
+# 🔓
+???
+
+- Skal se på én måte dere man også kan slippe å ha nøkler inn i GitHub secrets
+
+- Som ofte når det kommer til sikkerhet kryptering, signering, osv
+- Lurt å stole på noen som kan det de driver med gjøre det for deg
+- Bruk et bibliotek, bruk noe tried and trusted, der noen har gjort den vanskelig jobben
+
+- Støtte kom i 2021
+- Løsning som kombinerer OIDC tokens og WIF
+- Lar oss autentisere uten nøkler! 
+
+---
+
+<img class="abs-right" style="width: 60%; right: -11rem;" src=jwt.jpeg>
+
+<br>
+
+# OpenID
+
+> OpenID allows you to use an <br>
+> **existing account** to sign in to <br>
+> multiple websites, **without** needing <br>
+> to create **new passwords**.
+
+<br>
+<br>
+
+# OpenID Connect (OIDC)
+
+> GitHub Actions now supports <br>
+> OpenID Connect (OIDC) for **secure** <br>
+> deployments to cloud, which uses <br>
+> **short-lived tokens** that are<br>
+> **automatically rotated** for each <br>
+> deployment.
+
+.bottom-left[
+[What is OpenID?](https://openid.net/what-is-openid/)<br>
+[GitHub Actions: Secure cloud deployments<br>with OpenID Connect](https://github.blog/changelog/2021-10-27-github-actions-secure-cloud-deployments-with-openid-connect/)
+]
+
+???
+
+- OpenID - idéen om at man kan ha én identitet
+- OpenID Connect - Lag oppå Oauth, som lar deg
+- Fortelle hvem noen er, og at noen har gått god for det, i dette tilfellet GitHub. Gjennom et JWT token.
+- Mottaker kan verifisere integriteten, at det ikke har blitt tukla med, basert på signaturen i tokenet
+- Kan stole på innholdet
+  - tro på at det er GitHub
+  - tro på at det kommer fra det repo GitHub sier at det kommer fra; claims har navnet på repoet, branchen osv
+  - tro på at det ikke har utløpt
+  - tro på at det ikke er jeg som har laga det, da jeg ikke har GitHub sine nøkler som signerer det
+
+---
+class: middle
+
+# Workload Identity Federation
+
+<img src=wif.jpg>
+
+> Using identity federation, you can grant on-premises or multi-cloud workloads access to Google Cloud resources, without using a service account key.
+
+.bottom-right[
+https://cloud.google.com/blog/products/identity-security/enabling-keyless-authentication-from-github-actions<br>
+https://cloud.google.com/iam/docs/workload-identity-federation<br>
+https://www.youtube.com/watch?v=4vajaXzHN08&t=102s<br>
+]
+
+???
+
+- Nøkkelløst? Heftig overdrivelse. Helt ærlig så er det så fler nøkler enn du har trengt på lenge hvis du begynner å grave i hva som foregår.
+
+- Stipla linja
+  - På forhånd settes opp trust mellom GitHub og Skyleverandøren, basert en forventning om hva som står i JWT-tokenet
+  
+- Steg 1
+  - Variabler i GitHub Actions (med et token) kan brukes for å be om et JWT-token/ID-token
+  - Med det kan du be om et STS-token, Federert token, via Googles Security Token Services
+
+- Steg 2
+  - Sjekker mot poolen at repoet som står i JWT tokenet er konfigurert til å ha tilgang
+
+- Steg 3
+  - Kan veksle det Federerte tokenet inn et Access Token for SAen
+
+---
+class: middle
+
+.left[# Federert<br>token?]
+
+<img class="abs-right" style="width: 60%; right: -3rem;" src=federer.jpg>
+
+.bottom-right[
+<a href="https://eu.usatoday.com/story/sports/college/columnist/dan-wolken/2022/09/15/roger-federer-retires-grand-slam/10389546002/">
+Sam Greene/The Enquirer, USA Today Network
+</a>
+] 
+
+.bottom-left[
+https://cloud.google.com/docs/authentication/token-types
+]
+
+???
+
+- Ikke Federer sitt token.
+
+- Tenker på Federer. Spiller ikke tennis, men jeg vet hvem han er.
+- Det er det det handler om. Noen som har gått god for hvem du er.
+
+- Gått god for at tokenet gjelder Service Accounten din
+
+- Kan derfor brukes til å gjøre ting på vegne av den i GCP
+
+---
+<img class="full" src="gcp-github-provider.jpeg">
+
+.bottom-right[
+[Eksempel på oppsett med terraform](https://github.com/outofdevops/ghshr-gcp-wlif)
+]
+
+???
+
+- Sånn så det ut da vi satte opp dette i Kompis
+  - Kjører i GCP
+  
+- GCP-siden av det
+
+- Pool
+  - Lar deg håndtere flere eksterne identiteter
+
+- Provider
+  - Beskriver forholdet mellom GCP og den eksterne parten
+  - At det er GitHub
+
+- Dette kan man også sette opp med terraform
+  - Klassisk catch-22
+  - For du må ha Service Account nøkkel i Gthub Secrets
+  - For å få det til å kjøre første gang
+  
+---
+<img class="full" src="gcp-sa-role.jpeg">
+
+.bottom-left[
+[GitHub: Defining trust](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect#example-subject-claims)<br>
+[Google: Principal Identifiers](https://cloud.google.com/iam/docs/principal-identifiers)
+]
+
+???
+
+- Gir man en rolle til service accounten sin
+  - Som dere ikke ser pga den sykt kule blur effekten
+  - roles/iam.workloadIdentityUser
+  - Workload Identity User
+
+- Gir lov til å impersonate denne service accounten
+- Gitt det `principalSet` man har konfigurert
+
+- Det er her trusten ligger
+  - GCP stoler på GitHub
+  - GCP stoler på innholdet i tokenet
+  - GitHub sier hvilket repo det er
+  
+- Hvem som skal få impersonate den
+
+- Her kan man legge til andre ting
+  - repo
+  - PRer
+  - bare fra gitte refs
+  - bare fra gitte brukere
+  - bare fra gitte brancher
+  
+- Forskjellige regler for forskjellige service accounts, grupper etc etc
+
+---
+template: head
+.pull-left.half[
+# Så hvordan ser GitHub Actions Workflowen ut?
+]
+<img class="abs-right" style="width: 60%; top: -2rem; right: -5rem" src="tf.jpeg">
+
+???
+
+- Permissions
+  - Contents read, for å få sjekka ut koden
+  - id-token write, for å få henta et JWT token
+
+- Token format: access-token
+- Service account navn: blurra i forrige slide
+- Workload idendtity provider: Den fulle stien til provideren i GCP
+
+- Tokenets rettigheter er begrenset til det repoet der workflowen kjører.
+
+---
+<img class="full" src="delete-key-2.jpeg">
+???
+- Så er det klart da for å slette nøkkelen fra GitHub Secrets
+- Det stod `gcloud` på forrige slide
+- Terraform vi egentlig har brukt dette til
+---
+<img class="full" src="real-test.jpeg">
+???
+- Push noe på master som fjerner en ressurs
+- Og se at det kjører grønt!
+
+- GitHub Actions uten GCP service account nøkler i GitHub Secrets
+- Actionen har genererer kortlevde tokens
+- som utløper når den er kjørt ferdig
+- Roteres kontinuerlig
+---
+template: huge
+# Takk for meg! 👋
+## <a href="https://torgeir.dev">@torgeir</a>
+---
+layout: true
+class: middle inverse
+---
+# 📚 Ressurser
+.bottom-right[
+## ↪
+]
+---
+# 🧙Gode eksempler 
+
+- [Keyless Access GCP Resources from GitHub Self Hosted Runners <br>(repo)](https://github.com/outofdevops/ghshr-gcp-wlif)
+
+- [Keyless Access GCP Resources from GitHub Self Hosted Runners <br>(video)](https://www.youtube.com/watch?v=AvRHU-P5Cdg)
+
+- [Keyless Access GCP Resources from GitHub Self Hosted Runners<br>(workflow)
+](https://github.com/outofdevops/ghshr-gcp-wlif/actions/runs/1323136467/workflow)
+
+- [How does the GCP Workload Identity Federation work with the GitHub Provider](https://medium.com/google-cloud/how-does-the-gcp-workload-identity-federation-work-with-github-provider-a9397efd7158)
+
+- [Setup keyless authentication to Google Cloud for GitHub Actions using Terraform](https://binx.io/2022/09/26/setup-keyless-authentication-to-google-cloud-for-github-actions-using-terraform/) 
+---
+# 🗄️ Flere ressurser
+
+- https://github.com/google-github-actions/auth
+
+- [GitHub OIDC and Google Idendity Federation](https://www.youtube.com/watch?v=fa9jHNaG4SA)
+
+- [Authenticating using Google OpenID Connect Tokens](https://github.com/salrashid123/google_id_token/)
+
+- https://cloud.google.com/iam/docs/workload-identity-federation
+
+- https://github.com/github/docs/issues/14626
+
+- https://docs.github.com/en/actions/security-guides/automatic-token-authentication
+
+- https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions
+
+- https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect#updating-your-actions-for-oidc
+
+- https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-google-cloud-platform
